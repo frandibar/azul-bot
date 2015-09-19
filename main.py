@@ -15,6 +15,12 @@ context = (CERT, CERT_KEY)
 bot = TelegramBot(BOT_TOKEN)
 
 
+@app.route("/debug")
+def debug():
+    ret = "BOT_TOKEN %s\nCERT %s\nKEY %s" % (BOT_TOKEN, CERT, CERT_KEY)
+    return ret
+
+
 # This strange string is part of the bot's token
 # I use it so that only telegram hits it.
 @app.route("/" + BOT_TOKEN, methods=['POST'])
