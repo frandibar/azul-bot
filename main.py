@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask
-from twx.botapi import TelegramBot
+import twx.botapi as botapi
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CERT      = os.getenv("CERT")
@@ -12,7 +12,7 @@ PORT      = 8443
 app = Flask(__name__)
 context = (CERT, CERT_KEY)
 
-bot = TelegramBot(BOT_TOKEN)
+bot = botapi.TelegramBot(BOT_TOKEN)
 
 
 @app.route("/debug")
@@ -36,8 +36,12 @@ def webhook():
 
 
 def set_webhook():
-    bot.set_webhook(webhook_url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN),
-                    certificate=open(CERT, "rb"))
+    file_info = botapi.InputFileInfo(os.path.split(CERT)[-1],
+                                     open(CERT, "rb"),
+                                     "multipart/form-data")
+    cert = botapi.InputFile("document", file_info)
+    bot.set_webhook(url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN),
+                    certificate=cert)
 
 
 set_webhook()
