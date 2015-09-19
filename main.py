@@ -17,7 +17,9 @@ bot = TelegramBot(BOT_TOKEN)
 
 @app.route("/debug")
 def debug():
-    ret = "BOT_TOKEN %s\nCERT %s\nKEY %s" % (BOT_TOKEN, CERT, CERT_KEY)
+    ret = "BOT_TOKEN %s<br>CERT %s<br>KEY %s" % (BOT_TOKEN,
+                                                 "".join(open(CERT).readlines()),
+                                                 "".join(open(CERT_KEY).readlines()))
     return ret
 
 
