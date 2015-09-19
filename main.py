@@ -40,6 +40,9 @@ def set_webhook():
                     certificate=open(CERT, "rb"))
 
 
+set_webhook()
+
+
 if __name__ == '__main__':
     set_webhook()
 
