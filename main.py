@@ -41,8 +41,8 @@ def set_webhook():
                                      open(CERT, "rb"),
                                      "multipart/form-data")
     cert = botapi.InputFile("document", file_info)
-    ret = bot.set_webhook(url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN),
-                          certificate=cert)
+    ret = bot.set_webhook(url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN))
+                          # certificate=cert)
     if ret:
         return "webhook setup ok"
     return "webhook setup failed: %s" % ret
