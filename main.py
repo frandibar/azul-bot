@@ -35,6 +35,11 @@ def webhook():
     return "OK"
 
 
+@app.route("/get_updates")
+def get_updates():
+    return bot.get_updates()
+
+
 @app.route("/set_webhook")
 def set_webhook():
     file_info = botapi.InputFileInfo(os.path.split(CERT)[-1],
