@@ -35,16 +35,17 @@ def webhook():
     return "OK"
 
 
+@app.route("/set_webhook")
 def set_webhook():
     file_info = botapi.InputFileInfo(os.path.split(CERT)[-1],
                                      open(CERT, "rb"),
                                      "multipart/form-data")
     cert = botapi.InputFile("document", file_info)
-    bot.set_webhook(url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN),
-                    certificate=cert)
-
-
-set_webhook()
+    ret = bot.set_webhook(url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN),
+                          certificate=cert)
+    if ret:
+        return "webhook setup ok"
+    return "webhook setup failed: %s" % ret
 
 
 if __name__ == '__main__':
