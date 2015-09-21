@@ -40,9 +40,9 @@ def webhook():
     # return "OK"
 
     update = telegram.update.Update.de_json(flask.request.get_json(force=True))
-    bot.sendMessage(chat_id=update.message.chat_id, text='Hello, there')
+    ret = bot.sendMessage(chat_id=update.message.chat_id, text='Hello, there')
 
-    return 'OK'
+    return "OK" if ret else "FAIL"
 
 
 # @app.route("/get_updates")
@@ -67,7 +67,7 @@ def webhook():
 @app.route("/remove_webhook")
 def remove_webhook():
     ret = bot.setWebhook(webhook_url="")
-    return ret
+    return "OK" if ret else "FAIL"
     # ret = bot.set_webhook(url="")
     # if ret:
     #     return "webhook removal ok"
@@ -77,7 +77,7 @@ def remove_webhook():
 @app.route("/set_webhook")
 def setWebhook():
     ret = bot.setWebhook(webhook_url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN))
-    return ret
+    return "OK" if ret else "FAIL"
     # bot.setWebhook(webhook_url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN),
     #                certificate=open(CERT, 'rb'))
 
