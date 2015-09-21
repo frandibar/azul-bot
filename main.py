@@ -1,3 +1,4 @@
+import json
 import os
 
 from flask import Flask
@@ -37,7 +38,8 @@ def webhook():
 
 @app.route("/get_updates")
 def get_updates():
-    return bot.get_updates()
+    upd = bot.get_updates()
+    return json.dumps(upd.result)
 
 
 @app.route("/set_webhook")
