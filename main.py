@@ -3,11 +3,13 @@ import os
 
 import flask
 import telegram
-import twx.botapi as botapi
+# import twx.botapi as botapi
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CERT      = os.getenv("CERT")
-CERT_KEY  = os.getenv("CERT_KEY")
+# CERT      = os.getenv("CERT")
+# CERT_KEY  = os.getenv("CERT_KEY")
+CERT      = "/app/certs/server.crt"
+CERT_KEY  = "/app/certs/server.key"
 HOST      = "azul-bot.herokuapp.com"
 PORT      = 8443
 
