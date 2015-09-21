@@ -54,7 +54,7 @@ def set_webhook():
 
 
 @app.route("/remove_webhook")
-def set_webhook():
+def remove_webhook():
     ret = bot.set_webhook(url="")
     if ret:
         return "webhook removal ok"
