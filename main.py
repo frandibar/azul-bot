@@ -11,7 +11,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 CERT      = "/app/certs/server.crt"
 CERT_KEY  = "/app/certs/server.key"
 HOST      = "azul-bot.herokuapp.com"
-PORT      = 8443
+PORT      = 443
 
 app = flask.Flask(__name__)
 context = (CERT, CERT_KEY)
