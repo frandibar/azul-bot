@@ -45,10 +45,10 @@ def webhook():
     return 'OK'
 
 
-@app.route("/get_updates")
-def get_updates():
-    upd = bot.get_updates()
-    return json.dumps(upd.result)
+# @app.route("/get_updates")
+# def get_updates():
+#     upd = bot.get_updates()
+#     return json.dumps(upd.result)
 
 
 # @app.route("/set_webhook")
@@ -66,7 +66,8 @@ def get_updates():
 
 @app.route("/remove_webhook")
 def remove_webhook():
-    bot.setWebhook(webhook_url="")
+    ret = bot.setWebhook(webhook_url="")
+    return ret
     # ret = bot.set_webhook(url="")
     # if ret:
     #     return "webhook removal ok"
@@ -75,8 +76,10 @@ def remove_webhook():
 
 @app.route("/set_webhook")
 def setWebhook():
-    bot.setWebhook(webhook_url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN),
-                   certificate=open(CERT, 'rb'))
+    ret = bot.setWebhook(webhook_url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN))
+    return ret
+    # bot.setWebhook(webhook_url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN),
+    #                certificate=open(CERT, 'rb'))
 
 
 if __name__ == '__main__':
