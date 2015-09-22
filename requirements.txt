@@ -1,5 +1,4 @@
 Flask==0.10.1
 gunicorn==19.3.0
 Werkzeug==0.9.4
-twx.botapi==1.0.2
 python-telegram-bot==2.8.4
