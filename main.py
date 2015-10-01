@@ -4,6 +4,9 @@ import os
 import re
 import requests
 
+from datetime import datetime
+from dateutil import tz
+
 import flask
 import telebot
 
@@ -18,7 +21,7 @@ logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
 
 BASE_URL = "http://price-tracker.herokuapp.com/api/v1/"
-SYMBOLS_URL = BASE_URL + "symbols/{currencies}/ambito"
+SYMBOLS_URL = BASE_URL + "symbols/{currencies}/{src}"
 
 MARKDOWN = "Markdown"
 
@@ -27,15 +30,29 @@ CMD_HELP       = "help"
 CMD_ABOUT      = "about"
 CMD_COTIZACION = "cotizacion"
 
-USDARSB = "USD BLUE"
 USDARS  = "USD Oficial"
+USDARSB = "USD BLUE"
 BTCUSD  = "BTC USD"
-BTCARS  = "BTC ARS"
+# BTCARS  = "BTC ARS"
+BTCARSB = "BTC ARSB"
 
-SYMBOLS = frozenset(["USDARS", "USDARSB"])
+SYMBOLS = frozenset(["USDARS", "USDARSB", "BTCUSD", "BTCARSB"])
 FROM_TO = {"USDARS": ("USD", "ARS"),
-           "USDARSB": ("USD", "ARSB")
+           "USDARSB": ("USD", "ARSB"),
+           "BTCUSD": ("BTC", "USD"),
+           # "BTCARS": ("BTC", "ARS"),
+           "BTCARS": ("BTC", "ARSB"),
 }
+
+
+def get_local_time(strdate):
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+    utc = datetime.strptime(strdate, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=from_zone)
+    # Convert time zone
+    local = utc.astimezone(to_zone)
+    return local.strftime("%b %d %H:%M")
+
 
 def parse_text(text):
     """Returns a tuple with the amount and the currencies to convert.
@@ -61,29 +78,31 @@ def parse_text(text):
 @bot.message_handler(func=lambda msg: parse_text(msg.text))
 def convert(message):
     amount, currs = parse_text(message.text)
-    req = requests.get(SYMBOLS_URL.format(currencies=currs))
+    req = requests.get(SYMBOLS_URL.format(currencies=currs, src="ambito" if currs.startswith("USD") else "bitpay"))
     data = req.json()["data"]
     ask = amount * data["ask"]
-    bid = amount * data["bid"]
+    bid = amount * data["bid"] if data["bid"] else ask
     avg = (ask + bid) / 2.0
-    template = """{amount:.4f} {curr[0]} = {ask:.4f} {curr[1]} Compra
-    {amount:.4f} {curr[0]} = {bid:.4f} {curr[1]} Venta
-    {amount:.4f} {curr[0]} = {avg:.4f} {curr[1]} Promedio
+    src = "Ambito" if currs.startswith("USD") else "Bitpay"
+    template = """{amount:.2f} {curr[0]} =
+    {ask:.2f} {curr[1]} Compra
+    {bid:.2f} {curr[1]} Venta
+    {avg:.2f} {curr[1]} Promedio
 
-    Fuente: Ambito Financiero {update}"""
+    Fuente: {src} {update}"""
     text = template.format(amount=amount,
                            curr=FROM_TO[currs],
                            ask=ask,
                            bid=bid,
                            avg=avg,
-                           update=data["updated_on"])
+                           src=src,
+                           update=get_local_time(data["stats"]["last_change"]))
     bot.send_message(message.chat.id, text)
 
 
 @bot.message_handler(commands=[CMD_START, CMD_HELP])
 def send_welcome(message):
-    # bot.reply_to(message, "Howdy, how are you doing?")
-    bot.send_message(message.chat.id, "Howdy, how are *you* doing?", parse_mode="Markdown")
+    bot.send_message(message.chat.id, "Hola, enviame el tipo de cambio que deseas. Por ej. 2.3btcusd", parse_mode="Markdown")
 
 
 # This strange string is part of the bot's token
@@ -125,8 +144,11 @@ def remove_webhook():
 
 @app.route("/set_webhook")
 def setWebhook():
-    ret = bot.setWebhook(webhook_url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN))
-    return "OK" if ret else "FAIL"
+    api_url_base = "https://api.telegram.org/bot" + BOT_TOKEN + "/setWebhook"
+    webhook_url = "https://%s:%s/%s" % (HOST, PORT, BOT_TOKEN)
+    return requests.post(api_url_base, data={"url": webhook_url})
+    # ret = bot.setWebhook(webhook_url='https://%s:%s/%s' % (HOST, PORT, BOT_TOKEN))
+    # return "OK" if ret else "FAIL"
 
 
 if __name__ == '__main__':
