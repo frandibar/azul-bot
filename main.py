@@ -46,12 +46,15 @@ FROM_TO = {"USDARS": ("USD", "ARS"),
 
 
 def get_local_time(strdate):
-    from_zone = tz.tzutc()
-    to_zone = tz.tzlocal()
-    utc = datetime.strptime(strdate, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=from_zone)
-    # Convert time zone
-    local = utc.astimezone(to_zone)
-    return local.strftime("%b %d %H:%M")
+    try:
+        from_zone = tz.tzutc()
+        to_zone = tz.tzlocal()
+        utc = datetime.strptime(strdate, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=from_zone)
+        # Convert time zone
+        local = utc.astimezone(to_zone)
+        return local.strftime("%b %d %H:%M")
+    except:
+        return ""
 
 
 def parse_text(text):
@@ -78,12 +81,12 @@ def parse_text(text):
 @bot.message_handler(func=lambda msg: parse_text(msg.text))
 def convert(message):
     amount, currs = parse_text(message.text)
-    req = requests.get(SYMBOLS_URL.format(currencies=currs, src="ambito" if currs.startswith("USD") else "bitpay"))
-    data = req.json()["data"]
-    ask = amount * data["ask"]
-    bid = amount * data["bid"] if data["bid"] else ask
+    src = "ambito" if currs.startswith("USD") else "bitpay"
+    req = requests.get(SYMBOLS_URL.format(currencies=currs, src=src))
+    data = req.json().get("data", {})
+    ask = amount * data.get("ask", 0)
+    bid = amount * data.get("bid", ask)
     avg = (ask + bid) / 2.0
-    src = "Ambito" if currs.startswith("USD") else "Bitpay"
     template = """{amount:.2f} {curr[0]} =
     {ask:.2f} {curr[1]} Compra
     {bid:.2f} {curr[1]} Venta
@@ -95,8 +98,8 @@ def convert(message):
                            ask=ask,
                            bid=bid,
                            avg=avg,
-                           src=src,
-                           update=get_local_time(data["stats"]["last_change"]))
+                           src=src.capitalize(),
+                           update=get_local_time(data.get("stats", {}).get("last_change", "")))
     bot.send_message(message.chat.id, text)
 
 
