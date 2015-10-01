@@ -30,20 +30,16 @@ CMD_HELP       = "help"
 CMD_ABOUT      = "about"
 CMD_COTIZACION = "cotizacion"
 
-USDARS  = "USD Oficial"
-USDARSB = "USD BLUE"
-BTCUSD  = "BTC USD"
-# BTCARS  = "BTC ARS"
-BTCARSB = "BTC ARSB"
-
-SYMBOLS = frozenset(["USDARS", "USDARSB", "BTCUSD", "BTCARSB"])
+SYMBOLS = frozenset(["USDARS", "USDARSB", "BTCUSD", "BTCARS"])
 FROM_TO = {"USDARS": ("USD", "ARS"),
            "USDARSB": ("USD", "ARSB"),
            "BTCUSD": ("BTC", "USD"),
-           # "BTCARS": ("BTC", "ARS"),
            "BTCARS": ("BTC", "ARSB"),
 }
 
+markup = telebot.types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+markup.add("USDARSB", "USDARS")
+markup.add("BTCUSD", "BTCARS")
 
 def get_local_time(strdate):
     try:
@@ -70,7 +66,7 @@ def parse_text(text):
             if input[0] in SYMBOLS:
                 return (float(1), input[0])
             return None
-        if len(input) == 2:
+        if len(input) == 2 and input[1] in SYMBOLS:
             input[0].replace(",", ".")
             return (float(input[0]), input[1])
     except Exception:
@@ -107,15 +103,21 @@ def convert(message):
                            src=src.capitalize(),
                            update=get_local_time(data.get("stats", {}).get("last_change", "")))
 
-    markup = telebot.types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    markup.add("USDARSB", "USDARS")
-    markup.add("BTCUSD", "BTCARS")
     bot.send_message(message.chat.id, text, reply_markup=markup)
 
 
 @bot.message_handler(commands=[CMD_START, CMD_HELP])
 def send_welcome(message):
-    bot.send_message(message.chat.id, "Hola, enviame el tipo de cambio que deseas. Por ej. 2.3btcusd", parse_mode="Markdown")
+    bot.send_message(message.chat.id,
+                     "Hola, enviame el tipo de cambio que deseas. Por ej. 2.3btcusd",
+                     reply_markup=markup)
+
+
+@bot.message_handler()
+def fallback(message):
+    bot.send_message(message.chat.id,
+                     "No entiendo.",
+                     reply_markup=markup)
 
 
 # This strange string is part of the bot's token
