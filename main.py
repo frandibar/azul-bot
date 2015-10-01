@@ -78,14 +78,20 @@ def parse_text(text):
     return None
 
 
+def isNone(var, default=0):
+    if var is None:
+        return default
+    return var
+
+
 @bot.message_handler(func=lambda msg: parse_text(msg.text))
 def convert(message):
     amount, currs = parse_text(message.text)
-    src = "ambito" if currs.startswith("USD") else "bitpay"
+    src = "ambito" if currs.startswith("USD") else ("satoshitango" if currs.endswith("ARS") else "bitstamp")
     req = requests.get(SYMBOLS_URL.format(currencies=currs, src=src))
     data = req.json().get("data", {})
-    ask = amount * data.get("ask", 0)
-    bid = amount * data.get("bid", ask)
+    ask = amount * isNone(data.get("ask"))
+    bid = amount * isNone(data.get("bid"))
     avg = (ask + bid) / 2.0
     template = """{amount:.2f} {curr[0]} =
     {ask:.2f} {curr[1]} Compra
@@ -100,7 +106,11 @@ def convert(message):
                            avg=avg,
                            src=src.capitalize(),
                            update=get_local_time(data.get("stats", {}).get("last_change", "")))
-    bot.send_message(message.chat.id, text)
+
+    markup = telebot.types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    markup.add("USDARSB", "USDARS")
+    markup.add("BTCUSD", "BTCARS")
+    bot.send_message(message.chat.id, text, reply_markup=markup)
 
 
 @bot.message_handler(commands=[CMD_START, CMD_HELP])
