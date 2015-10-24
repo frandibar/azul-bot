@@ -89,7 +89,7 @@ def convert(message):
     ask = amount * isNone(data.get("ask"))
     bid = amount * isNone(data.get("bid"))
     avg = (ask + bid) / 2.0
-    template = """{amount:.2f} {curr[0]} =
+    template = """{amount} {curr[0]} =
     {ask:.2f} {curr[1]} Compra
     {bid:.2f} {curr[1]} Venta
     {avg:.2f} {curr[1]} Promedio
@@ -127,21 +127,6 @@ def webhook():
     update = telebot.types.Update.de_json(flask.request.get_json(force=True))
     bot.process_new_messages([update.message])
     return "OK"
-    # update = telegram.update.Update.de_json(flask.request.get_json(force=True))
-    # if update.message.text.startswith(CMD_COTIZACION):
-    #     custom_keyboard = [[USDARSB, USDARS],
-    #                        [BTCUSD, BTCARS]]
-    #     reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard,
-    #                                                 one_time_keyboard=True)
-    #     return bot.sendMessage(chat_id=update.message.chat_id,
-    #                            text="Eleji una moneda.",
-    #                            reply_markup=reply_markup)
-
-    # elif update.message.text.startswith(USDARSB):
-    #     return bot.sendMessage(chat_id=update.message.chat_id,
-    #                            text = "Ambito:  $XXX")
-    # msg = "No entiendo. Escribime /help para que te entienda."
-    # return bot.sendMessage(chat_id=update.message.chat_id, text=msg)
 
 
 @app.route("/updates")
